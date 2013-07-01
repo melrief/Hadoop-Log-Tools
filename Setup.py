@@ -13,5 +13,6 @@ setup(name='HadoopLogTools',
       scripts=[join('bin',f) for f in listdir('bin')],
       packages=['hadoop.log'
                ,'hadoop.log.convert'
+               ,'hadoop.util'
                ,'hadoop.plot'],
      )
