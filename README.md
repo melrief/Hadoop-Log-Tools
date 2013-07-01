@@ -11,12 +11,14 @@ The tools provided are divided in three: conversion tools, transformations tools
 and visualization tools. The list of those tools is:
 
 **Conversion tools**:
+
 - `jobevents2json`: convert *Hadoop* output files of each job containing the
     job events into a json format
 - `jobsevents2json`: convert all the job events files in the *Hadoop* log
     directory to json format
 
 **Transformations tools**:
+
 - `clusterload`: takes in input json files, one per job, and
    output, for each line, the time and the number of tasks space separated
 - `esterror`: takes in input json files, one per job, and
@@ -28,6 +30,7 @@ and visualization tools. The list of those tools is:
     of tasks for each job, one per line
 
 **Visualization tools** (using matplotlib):
+
 - `plotcdf`: takes in input values separated by a newline and output the
     plot with cdf of that lines
 - `plotdots`: takes in input points separated by a newlines where each point
