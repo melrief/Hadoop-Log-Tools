@@ -47,7 +47,7 @@ file of the jobs completed inside the directory
 You can select a file from there and convert it to json using `jobevents2json`.
 For example:
 
-*.pyc```bash
+```bash
 ./bin/jobevents2json -i logs/history/done/version-1/10-10-15-40.openstacklocal_1370025702265_/2013/05/31/000000/job_201305311841_0001_1370025764537_ubuntu_PigMix+L17
 ```
 
