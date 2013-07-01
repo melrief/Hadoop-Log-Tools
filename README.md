@@ -10,14 +10,20 @@ own script in the *bin* directory.
 The tools provided are divided in three: conversion tools, transformations tools
 and visualization tools. The list of those tools is:
 
-**Conversion tools**:
+**Conversion tools**: they are used to convert *Hadoop* logs to a format easy
+to manipulate, like json.
 
 - `jobevents2json`: convert *Hadoop* output files of each job containing the
     job events into a json format
 - `jobsevents2json`: convert all the job events files in the *Hadoop* log
     directory to json format
 
-**Transformations tools**:
+**Transformations tools**: they are used to do transform the output of the
+conversion tools or of another transformation tool in something else.
+For example if you want to extract the
+average map time you can use the script `jobtimes` to first extract the map
+time for every map and then calculate the average using `stats` by pipelining
+the two commands.
 
 - `clusterload`: takes in input json files, one per job, and
    output, for each line, the time and the number of tasks space separated
@@ -28,8 +34,11 @@ and visualization tools. The list of those tools is:
    job times (map, shuffle, sort, reduce or full_reduce)
 - `numtasks`: take in input json files, one per job, and output the number
     of tasks for each job, one per line
+- `stats`: take in input one number per line and output mean, median, std, var,
+    min and/or max
 
-**Visualization tools** (using matplotlib):
+**Visualization tools**: set of tools used to visualize the data in output from
+transformations tools with python matplotlib.
 
 - `plotcdf`: takes in input values separated by a newline and output the
     plot with cdf of that lines
