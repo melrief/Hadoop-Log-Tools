@@ -48,8 +48,11 @@ transformations tools with python matplotlib.
     plot containing the job events. Job events are divided in start/finish of
     the job, map events and reduce events. Each job has its own line.
 
-## Convert job events to json
+## Tools tutorials
 
+### Convert job events to json
+
+This is the first step: make a conversion from *Hadoop* logs to json
 Let's say that `logs` is the *Hadoop* log directory. You can find the event
 file of the jobs completed inside the directory
 `logs/history/done/<version>/<job_tracker>/<year>/<month>/<day>/<run>/`.
@@ -66,5 +69,61 @@ If you want to convert *all* the jobs files into json and put them into a
 directory you can use the utility `jobsevents2json`. For example:
 
 ```bash
-./bin/jobsevents2json logs/ output_dir/
+./bin/jobsevents2json logs/ job_jsons/
+```
+
+Note that `jobsevents2json` takes in input the *root directory* of the logs, so
+it is very convenient.
+
+After the conversion we can use the transformation tools to extract data from
+the result.
+
+
+### Jobs times
+
+Let's say we want to know the map time of every task of the job_0001. We already
+have a file called job_0001.json that contains the result of `jobevents2json`.
+We can obtain them with the script `jobtimes`:
+
+```bash
+./bin/jobtimes -p map -i job_jsons/job_0001.json
+```
+
+This will output one map time per line, for example:
+
+```
+12.099
+15.117
+9.085
+12.087
+```
+
+Now we want to know the mean of those map times. We can use `stats`:
+
+```bash
+./bin/jobtimes -p map -i job_jsons/job_0001.json | ./bin/stats -a
+```
+
+We obtain the mean `12.097` as single value in a single line.
+
+
+### Plot CDF
+
+We want to plot the CDF of the sojourn times of jobs. We can first get the
+jobs sojourn times with the command:
+
+```bash
+./bin/jobtimes -s -i job_jsons/*
+```
+
+and then pipeline it to `plotcdf`:
+
+```bash
+./bin/jobtimes -s -i job_jsons/* | ./bin/plotcdf
+```
+
+if we like the plot we can save it somewhere:
+
+```bash
+./bin/jobtimes -s -i job_jsons/* | ./bin/plotcdf -o sojourn_times.pdf
 ```
