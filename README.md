@@ -13,7 +13,7 @@ and visualization tools.
 Note that each script support the `-h` option to get an helper. This is
 useful to understand what a script does and what options accepts.
 
-The list of those tools is:
+The available tools are:
 
 **Conversion tools**: they are used to convert *Hadoop* logs to a format easy
 to manipulate, like json.
