@@ -186,6 +186,49 @@ if we like the plot we can save it somewhere:
 ./bin/jobtimes -s -i job_jsons/* | ./bin/plotcdf -o sojourn_times.pdf
 ```
 
+### More advanced examples
+
+To plot the task times CDF of two different workloads, let's say
+*huge_hfsp* and *small_hfsp*, you can use:
+
+```bash
+./plotcdf.py -i \
+  <( ./jobtimes.py -p map -i huge_hfsp/job_infos/* small_hfsp/job_infos/* ) \
+  <( ./jobtimes.py -p full_reduce -i huge_hfsp/job_infos/* small_hfsp/job_infos/* ) \
+  -l "\\textsc{Map}" "\\textsc{Reduce}" -L 4 -xl "Task Time" \
+  -w 5 -a 12.0 6.0 \
+  -o task_times.eps
+```
+
+Let's analyze it step-by-step:
+
+```bash
+./plotcdf.py -i \
+  <( ./jobtimes.py -p map -i huge_hfsp/job_infos/* small_hfsp/job_infos/* ) \
+  <( ./jobtimes.py -p full_reduce -i huge_hfsp/job_infos/* small_hfsp/job_infos/* ) \
+```
+
+means plot two CDF, one for the map times and one for the reduce time
+
+```bash
+  -l "\\textsc{Map}" "\\textsc{Reduce}" -L 4 -xl "Task Time" \
+```
+
+the options `-l ...` put two entries in the legend: 
+Map for the first line and Reduce for the
+second. The option `-L 4` says where to put the legend following matplotlib
+specification. The option `-xl "Task Time"` say to use "Task Time" as label
+of the x-axis.
+
+```bash
+  -w 5 -a 12.0 6.0 \
+  -o task_times.eps
+```
+
+The option `-w 5` says that the lines width must be 5. The option `-a 12.0 6.0`
+says that the output figure must have size of x=12 and y=6. Finally the
+`-o task_times.eps` says where to save the figure.
+
 ## Create your own tool
 
 The output format of the conversion tool is json, so it can be easily imported
