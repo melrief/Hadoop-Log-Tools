@@ -8,7 +8,12 @@ all the libraries and *bin* that contains *Python* scripts. Each tool has its
 own script in the *bin* directory.
 
 The tools provided are divided in three: conversion tools, transformations tools
-and visualization tools. The list of those tools is:
+and visualization tools.
+
+Note that each script support the `-h` option to get an helper. This is
+useful to understand what a script does and what options accepts.
+
+The list of those tools is:
 
 **Conversion tools**: they are used to convert *Hadoop* logs to a format easy
 to manipulate, like json.
@@ -75,6 +80,59 @@ directory you can use the utility `jobsevents2json`. For example:
 Note that `jobsevents2json` takes in input the *root directory* of the logs, so
 it is very convenient.
 
+The output json has the following format: it is a dictionary with one key
+and one value. The key is the jobid. The value is another dictionary with
+all the informations of the jobs (job_name,launch_time,...). The value
+contains also a `maps` and a `reduces` key which are two dictionaries with
+all the tasks of that time. An example of output is:
+
+```json
+{
+  "job_201305311841_0099": {
+    "finish_time": "1370029490179",
+    "jobname": "PigMix L16",
+    "launch_time": "1370029440957",
+    "maps": {
+      "task_201305311841_0099_m_000000": {
+        "finish_time": "1370029463019",
+        "other_attempts": {},
+        "start_time": "1370029453999",
+        "successful_attempt": {
+          "attempt_201305311841_0099_m_000000_0": {
+            "hostname": "/default-rack/10-10-15-22.openstacklocal"
+          }
+        }
+      },
+      "task_201305311841_0099_m_000001": {
+        "finish_time": "1370029460923",
+        "other_attempts": {},
+        "start_time": "1370029454878",
+        "successful_attempt": {
+          "attempt_201305311841_0099_m_000001_0": {
+            "hostname": "/default-rack/10-10-15-39.openstacklocal"
+          }
+        }
+      }
+    },
+    "reduces": {
+      "task_201305311841_0099_r_000000": {
+        "finish_time": "1370029484047",
+        "other_attempts": {},
+        "start_time": "1370029466011",
+        "successful_attempt": {
+          "attempt_201305311841_0099_r_000000_0": {
+            "hostname": "/default-rack/10-10-15-25.openstacklocal",
+            "shuffle_finished": "1370029477746",
+            "sort_finished": "1370029478152"
+          }
+        }
+      }
+    },
+    "submit_time": "1370029437262"
+  }
+}
+```
+
 After the conversion we can use the transformation tools to extract data from
 the result.
 
@@ -126,4 +184,62 @@ if we like the plot we can save it somewhere:
 
 ```bash
 ./bin/jobtimes -s -i job_jsons/* | ./bin/plotcdf -o sojourn_times.pdf
+```
+
+## Create your own tool
+
+The output format of the conversion tool is json, so it can be easily imported
+using any language. To understand how is written a script that uses the output
+of the conversion tool, let's see how `numtasks` is written. Note that the
+script calls the main function of `hadoop.log.num_tasks.py`. The source code is:
+
+```python
+#!/usr/bin/env python
+from __future__ import print_function,division
+
+import argparse
+import json
+import sys
+
+def parse_args(args):
+  p = argparse.ArgumentParser()
+  p.add_argument('-t','--task-type',required=True,choices=['maps','reduces','both'])
+  p.add_argument('-i','--input-files',required=True, nargs='+'
+                     ,type=argparse.FileType('rt'))
+  return p.parse_args(args)
+
+def main():
+  args = parse_args(sys.argv[1:])
+  for input_file in args.input_files:
+    job = json.load(input_file).values()[0]
+    if args.task_type == 'both':
+      print( len(job['maps']),len(job['reduces']) )
+    else:
+      print(len( job[args.task_type] ))
+
+if __name__=='__main__':
+  main()
+```
+
+The `main` function is the where we load the json of a job and transform it.
+The line:
+
+```python
+job = json.load(input_file).values()[0]
+```
+
+load the job value and put it in a variable called `job`. To understand why
+we need `values()[0]` you have to recall the json structure produced by the
+converter: the key of the json file is the jobid whereas the value contains
+all the informations that we need to get the number of tasks. Now jobs is a
+dictionary and contains all the informations that we need.
+
+To print the number of tasks, we need to lookup tasks by task type and then
+print the length in output. This is done by:
+
+```python
+if args.task_type == 'both':
+  print( len(job['maps']),len(job['reduces']) )
+else:
+  print(len( job[args.task_type] ))
 ```
