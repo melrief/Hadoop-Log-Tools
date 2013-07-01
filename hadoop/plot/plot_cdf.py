@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 import argparse
-import matplotlib as MPL
-#MPL.use( 'wx' )
 import matplotlib.pyplot as PLT
-MPL.rc('font',**{'family':'serif','serif':['Times']})
-MPL.rc('text', usetex=True)
-MPL.rcParams.update({'font.size': 22})
 import numpy as N
 import os
 from os.path import basename
@@ -34,8 +29,8 @@ def mk_parser():
     p.add_argument('-x', '--x-scale',required=False,default='semilogx'
                        , choices=['normal','semilogx']
                        , help='scale of the x axis')
-    p.add_argument('-yl', '--y-label', default=None, required=False,
-                   metavar='string',help='string used as y label')
+    p.add_argument('-xl', '--x-label', default=None, required=False,
+                   metavar='string',help='string used as x label')
     p.add_argument('-i', '--input-files', default=None, nargs="+",
                    help='input file or empty (stdin)',metavar='INPUT_FILE')
     p.add_argument('-l', '--legend', default=[], required=False, nargs="+",
@@ -59,9 +54,6 @@ def mk_parser():
 
 def main():
     p = mk_parser()
-    if len(sys.argv) < 2:
-      p.print_help()
-      sys.exit(0)
     args = p.parse_args(sys.argv[1:])
     lss = []
     legend_labels = []

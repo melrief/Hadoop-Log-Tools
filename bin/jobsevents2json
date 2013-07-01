@@ -1,0 +1,10 @@
+#!/bin/bash
+
+if [[ -z $1 ]]; then
+    echo "Usage: $0 <history_directory> <output_directory>"
+fi
+
+OUTDIR="$2"
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+"$DIR/jobevents2json" -i $1/history/done/*/*/*/*/*/*/* -o "$OUTDIR"
