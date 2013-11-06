@@ -15,6 +15,7 @@ def mkargparse():
 
 def plot_lines(jid,job,y,job_start='s', job_finish='d', map_start='+'
               ,map_finish='x', reduce_start='v', reduce_finish='^'):
+
   jy,my,ry = y+1,y+0.5,y
   def plot_dot(xs,marker,y,color='b',linestyle=''):
     PLT.plot([long(x)/1000. for x in xs]
@@ -23,17 +24,20 @@ def plot_lines(jid,job,y,job_start='s', job_finish='d', map_start='+'
 
   color = colors.next()
 
-  plot_dot( [job['submit_time'],job['launch_time'],job['finish_time']],job_start,jy,color=color,linestyle='-')
+  try:
+    plot_dot( [job['submit_time'],job['launch_time'],job['finish_time']],job_start,jy,color=color,linestyle='-')
 
-  map_tasks = job['maps'].values()
-  plot_dot( [m['start_time'] for m in map_tasks],map_start,my,color=color )
-  plot_dot( [m['finish_time'] for m in map_tasks],map_finish,my,color=color )
+    map_tasks = job['maps'].values()
+    plot_dot( [m['start_time'] for m in map_tasks],map_start,my,color=color )
+    plot_dot( [m['finish_time'] for m in map_tasks],map_finish,my,color=color )
 
-  reduce_tasks = job['reduces'].values()
-  plot_dot( [r['start_time'] for r in reduce_tasks],reduce_start,ry,color=color )
-  plot_dot( [r['finish_time'] for r in reduce_tasks],reduce_finish,ry,color=color )
+    reduce_tasks = job['reduces'].values()
+    plot_dot( [r['start_time'] for r in reduce_tasks],reduce_start,ry,color=color )
+    plot_dot( [r['finish_time'] for r in reduce_tasks],reduce_finish,ry,color=color )
 
-  return jy,my,ry
+    return jy,my,ry
+  except KeyError:
+    return None
 
 def main():
   args = mkargparse().parse_args(sys.argv[1:])
@@ -48,8 +52,12 @@ def main():
     return cmp(job1['launch_time'],job2['launch_time'])
   for i,(jid,job) in enumerate(sorted(jobs.items(),cmp=sort_by_launch_time)):
     #print job
-    jy,my,ry = plot_lines(jid,job,0.5+i*2)
-    yticks.extend([jy,my,ry])
+    noneOrCoords = plot_lines(jid,job,0.5+i*2)
+    if noneOrCoords:
+      jy,my,ry = noneOrCoords
+      yticks.extend([jy,my,ry])
+    else:
+      print('job ' + jid + ' is not a valid or successful job, ignoring')
   PLT.ylim(0,yticks[-1]+1)
   PLT.yticks(yticks,
              [k for key in jobs.keys() for k in [key+' job'
