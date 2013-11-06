@@ -23,11 +23,23 @@ def main():
       if args.task_type:
         job_tasks = job[args.task_type + 's'].values()
         for task in job_tasks:
-          events.append( (launch_time,True) )
-          events.append( (int(task['finish_time']),False) )
+          try:
+            finish_time = int(task['finish_time'])
+            events.append( (launch_time,True) )
+            events.append( (finish_time,False) )
+          except KeyError:
+            sys.stderr.write('finish time not found, ignoring\n')
+          except ValueError:
+            sys.stderr.write('the finish time is not a int, ignoring\n')
       else:
-        events.append( (launch_time,True) )
-        events.append( (int(job['finish_time']),False) )
+        try:
+          finish_time = int(job['finish_time'])
+          events.append( (launch_time,True) )
+          events.append( (finish_time,False) )
+        except KeyError:
+          sys.stderr.write('finish time not found, ignoring\n')
+        except ValueError:
+          sys.stderr.write('the finish time is not a int, ignoring\n')
     except KeyError:
       sys.stderr.write('job is not a valid or successful job, ignoring\n'+str(job))
       continue
