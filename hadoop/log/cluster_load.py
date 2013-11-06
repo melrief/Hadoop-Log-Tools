@@ -18,15 +18,19 @@ def main():
   events = []
   for input_file in args.input_files:
     job = json.load(input_file).values()[0]
-    launch_time = int(job['launch_time'])
-    if args.task_type:
-      job_tasks = job[args.task_type + 's'].values()
-      for task in job_tasks:
+    try:
+      launch_time = int(job['launch_time'])
+      if args.task_type:
+        job_tasks = job[args.task_type + 's'].values()
+        for task in job_tasks:
+          events.append( (launch_time,True) )
+          events.append( (int(task['finish_time']),False) )
+      else:
         events.append( (launch_time,True) )
-        events.append( (int(task['finish_time']),False) )
-    else:
-      events.append( (launch_time,True) )
-      events.append( (int(job['finish_time']),False) )
+        events.append( (int(job['finish_time']),False) )
+    except KeyError:
+      sys.stderr.write('job is not a valid or successful job, ignoring\n'+str(job))
+      continue
 
   loads = []
   c = 0
