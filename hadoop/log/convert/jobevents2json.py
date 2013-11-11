@@ -22,10 +22,13 @@ def parse_args(args):
   p.add_argument('-o','--output-dir'
                 ,help='The output dir (default=stdout)'
                 ,required=False)
+  p.add_argument('-d','--debug',action='store_true'
+                ,help='print runtime informations')
   return p.parse_args(args)
 
 def main():
   args = parse_args(sys.argv[1:])
+  debug = args.debug
 
   for input_file in args.input_files:
     sys.stderr.write('Parsing {}...'.format(input_file.name))
@@ -57,8 +60,9 @@ def main():
         for key in required_keys:
           if key in event:
             if key in job:
-              sys.stderr.write('WARN: key {} already in job, ignoring{}'
-                  .format(key,os.linesep))
+              if debug:
+                sys.stderr.write('WARN: key {} already in job, ignoring{}'
+                    .format(key,os.linesep))
               continue
             else:
               job[key.lower()] = event[key]
@@ -66,15 +70,15 @@ def main():
             not_in_event_keys.add(key)
 
         # user waring on fields not found
-        if not_in_event_keys:
-          sys.stderr.write('WARN: key {} not in event, ignoring{}'
-              .format(not_in_event_keys,os.linesep))
+        if not_in_event_keys and debug:
+            sys.stderr.write('WARN: key {} not in event, ignoring{}'
+                .format(not_in_event_keys,os.linesep))
 
         # user warning on ignored fields
         ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
-        if ignored_keys:
-          sys.stderr.write('WARN: ignoring event keys {}{}'
-              .format(ignored_keys,os.linesep))
+        if ignored_keys and debug:
+            sys.stderr.write('WARN: ignoring event keys {}{}'
+                .format(ignored_keys,os.linesep))
 
       elif event_type == 'Task':
         task_type = event['TASK_TYPE']
@@ -95,13 +99,13 @@ def main():
             task[key.lower()] = event[key]
 
         # user waring on fields not found
-        if not_in_event_keys:
+        if not_in_event_keys and debug:
           sys.stderr.write('WARN: key {} not in event, ignoring{}'
               .format(not_in_event_keys,os.linesep))
 
         # user warning on ignored fields
         ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
-        if ignored_keys:
+        if ignored_keys and debug:
           sys.stderr.write('WARN: ignoring event keys {}{}'
               .format(ignored_keys,os.linesep))
 
@@ -132,13 +136,13 @@ def main():
             attempt_data[key.lower()] = event[key]
 
         # user waring on fields not found
-        if not_in_event_keys:
+        if not_in_event_keys and debug:
           sys.stderr.write('WARN: key {} not in event, ignoring{}'
               .format(not_in_event_keys,os.linesep))
 
         # user warning on ignored fields
         ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
-        if ignored_keys:
+        if ignored_keys and debug:
           sys.stderr.write('WARN: ignoring event keys {}{}'
               .format(ignored_keys,os.linesep))
 

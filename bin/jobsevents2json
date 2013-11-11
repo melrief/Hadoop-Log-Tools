@@ -5,6 +5,12 @@ if [[ -z $1 ]]; then
 fi
 
 OUTDIR="$2"
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+CMD="jobevents2json"
 
-"$DIR/jobevents2json" -i $1/history/done/*/*/*/*/*/*/* -o "$OUTDIR"
+for fn in `find "${1}/history/done" -type f -regex '.+[^(xml|jar|crc)]$'`
+do
+echo "Parsing file ${fn}"
+"$CMD" -i "${fn}" -o "${OUTDIR}" 1>/dev/null 2>/dev/null &
+done
+
+wait
