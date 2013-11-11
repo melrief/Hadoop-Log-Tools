@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-try:
-  from hadoop.log.convert import jobevents2json
-except ImportError:
-  import sys
-  import os.path as path
-  project_dir = path.dirname(path.dirname(path.realpath(__file__)))
-  sys.path.append(path.abspath(project_dir))
-  from hadoop.log.convert import jobevents2json
+from hadoop.log.convert import jobevents2json
 
 jobevents2json.main()

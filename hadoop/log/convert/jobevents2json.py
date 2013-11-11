@@ -38,12 +38,44 @@ def main():
         print('error: it doesn\t contain the events of a job')
         continue
       event_type = event_words[0]
+
       if event_type == 'Job':
         if jobid is None and 'JOBID' in event:
           jobid = event['JOBID']
-        for key in ['JOBNAME','SUBMIT_TIME','LAUNCH_TIME','FINISH_TIME']:
-          if not key in job and key in event:
-            job[key.lower()] = event[key]
+        required_keys = {'JOBNAME'
+                        ,'SUBMIT_TIME'
+                        ,'LAUNCH_TIME'
+                        ,'FINISH_TIME'
+                        ,'COUNTERS'
+                        ,'TOTAL_MAPS'
+                        ,'TOTAL_REDUCES'
+                        ,'FAILED_MAPS'
+                        ,'FAILED_REDUCES'
+                        ,'FINISHED_MAPS'
+                        ,'FINISHED_REDUCES'}
+        not_in_event_keys = set()
+        for key in required_keys:
+          if key in event:
+            if key in job:
+              sys.stderr.write('WARN: key {} already in job, ignoring{}'
+                  .format(key,os.linesep))
+              continue
+            else:
+              job[key.lower()] = event[key]
+          else:
+            not_in_event_keys.add(key)
+
+        # user waring on fields not found
+        if not_in_event_keys:
+          sys.stderr.write('WARN: key {} not in event, ignoring{}'
+              .format(not_in_event_keys,os.linesep))
+
+        # user warning on ignored fields
+        ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
+        if ignored_keys:
+          sys.stderr.write('WARN: ignoring event keys {}{}'
+              .format(ignored_keys,os.linesep))
+
       elif event_type == 'Task':
         task_type = event['TASK_TYPE']
         if task_type != 'MAP' and task_type != 'REDUCE':
@@ -55,9 +87,24 @@ def main():
         else:
           task = { 'successful_attempt' : {} , 'other_attempts' : {} }
           tasks[task_id] = task
-        for key in ['START_TIME','FINISH_TIME']:
+
+        required_keys = {'START_TIME','FINISH_TIME','COUNTERS'}
+        not_in_event_keys = set()
+        for key in ['START_TIME','FINISH_TIME','COUNTERS']:
           if not key in job and key in event:
             task[key.lower()] = event[key]
+
+        # user waring on fields not found
+        if not_in_event_keys:
+          sys.stderr.write('WARN: key {} not in event, ignoring{}'
+              .format(not_in_event_keys,os.linesep))
+
+        # user warning on ignored fields
+        ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
+        if ignored_keys:
+          sys.stderr.write('WARN: ignoring event keys {}{}'
+              .format(ignored_keys,os.linesep))
+
       elif event_type == 'MapAttempt' or event_type == 'ReduceAttempt':
         if not 'TASK_STATUS' in event:
           continue
@@ -77,9 +124,24 @@ def main():
             task['other_attempts'][attempt_id] = attempt_data
           else:
             task['other_attempts'][attempt_id] = { attempt_id : attempt_data }
-        for key in ['HOSTNAME','SORT_FINISHED','SHUFFLE_FINISHED']:
+
+        required_keys = {'HOSTNAME','SORT_FINISHED','SHUFFLE_FINISHED','COUNTERS'}
+        not_in_event_keys = set()
+        for key in ['HOSTNAME','SORT_FINISHED','SHUFFLE_FINISHED','COUNTERS']:
           if key in event:
             attempt_data[key.lower()] = event[key]
+
+        # user waring on fields not found
+        if not_in_event_keys:
+          sys.stderr.write('WARN: key {} not in event, ignoring{}'
+              .format(not_in_event_keys,os.linesep))
+
+        # user warning on ignored fields
+        ignored_keys = set(event.keys()) - required_keys - {'JOBID'}
+        if ignored_keys:
+          sys.stderr.write('WARN: ignoring event keys {}{}'
+              .format(ignored_keys,os.linesep))
+
     if not jobid:
       print('error: it doesn\'t contain the events of a job')
       continue

@@ -1,12 +1,5 @@
 #!/usr/bin/env python
 
-try:
-  from hadoop.plot import plot_dots
-except ImportError:
-  import sys
-  import os.path as path
-  project_dir = path.dirname(path.dirname(path.realpath(__file__)))
-  sys.path.append(path.abspath(project_dir))
-  from hadoop.plot import plot_dots
+from hadoop.plot import plot_dots
 
 plot_dots.main()
