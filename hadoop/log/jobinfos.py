@@ -20,23 +20,43 @@ def parse_args(args):
 def errl(m):
   sys.stderr.write('{}{}'.format(m,os.linesep))
 
+
 def main():
   args = parse_args(sys.argv[1:])
   acc = []
-  for input_file in args.input_files:
+  fields = set()
+
+  def decode(i):
     try:
-      jobWithId = json.load(input_file)
-      jobid = jobWithId.keys()[0]
-      job = jobWithId.values()[0]
-      curr = ['id: {}'.format(jobid)]
-      for key in filter(lambda(a): not a in ['counters','maps','reduces'],job):
-        curr.append('{}: {}'.format(key,job[key]))
-      acc.append(sorted(curr))
-    except KeyError as e:
-      errl('error for file {}: {} {}'.format(input_file.name,e.errno,e.strerror))
-  for l in to_tab(acc):
-    print(' | '.join(l))
+      return json.load(i).items()[0]
+    except ValueError as e:
+      errl('{} raised {}'.format(i,e))
+      return None
+  
+  inputs = []
+  for input_file in args.input_files:
+    res = decode(input_file)
+    if res:
+      inputs.append(res)
+  
+  for jobid,job in inputs:
+    for key in job:
+      if key not in ['counters','maps','reduces']:
+        fields.add(key)
+
+  # TODO: sort fields
+
+  acc = []
+  for jobid,job in inputs:
+    curr = []
+    curr.append('id: {}'.format(jobid))
+    for field in fields:
+      curr.append('{}: {}'.format(field, job[field] if field in job else 'n/a'))
+    acc.append(curr)
+
+  for line in to_tab(acc):
+    print(' | '.join(line))
+        
 
 if __name__=='__main__':
   main()
-

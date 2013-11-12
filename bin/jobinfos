@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+from hadoop.log import jobinfos
+
+jobinfos.main()
