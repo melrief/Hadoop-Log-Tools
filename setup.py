@@ -11,7 +11,7 @@ setup(name='HadoopLogTools',
       author_email='pastorelli.mario@gmail.command',
       url='',
       scripts=[join('bin',f) for f in listdir('bin')],
-      install_requires=[
+      install_required=[
          'numpy == 1.7.1'
         ,'matplotlib == 1.2.1'
         ,'scipy == 0.11.0'
