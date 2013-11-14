@@ -1,0 +1,44 @@
+#!/usr/bin/env python
+from __future__ import print_function,division
+
+import argparse
+import json
+import os
+import sys
+
+from hadoop.util.filter import add_predicates
+
+
+def parse_args(args):
+  p = argparse.ArgumentParser()
+  p.add_argument('-i','--input-files',required=True, nargs='+'
+                     ,type=argparse.FileType('rt'))
+
+  add_predicates(p)
+
+  return p.parse_args(args)
+
+def errl(m):
+  sys.stderr.write('{}{}'.format(m,os.linesep))
+
+def main():
+  args = parse_args(sys.argv[1:])
+  for input_file in args.input_files:
+    try:
+      job = json.load(input_file).values()[0]
+
+      if not args.predicate:
+        sys.stdout.write('{}{}'.format(input_file.name,os.linesep))
+
+      trueOrErr = args.predicate(job)
+      if trueOrErr == True:
+        sys.stdout.write('{}{}'.format(input_file.name,os.linesep))
+      else:
+        sys.stderr.write('predicate on file {} failed because {}{}'
+            .format(input_file.name, trueOrErr, os.linesep))
+
+    except ValueError as e:
+      errl('error for file {}: {}'.format(input_file.name,e))
+
+if __name__=='__main__':
+  main()
