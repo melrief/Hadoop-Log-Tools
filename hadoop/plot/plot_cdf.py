@@ -13,6 +13,8 @@ from libplot import linestyles
 distr = { 'lognorm' : SS.lognorm }
 
 def makeCDF(ls):
+    if not ls:
+        return None
     xs = sorted(ls)
     ys = N.linspace( 1/len(xs), 1, len(xs) )
     #print zip(xs,ys)
@@ -82,7 +84,11 @@ def main():
 
     lines = []
     for ls in lss:
-        xs,ys = makeCDF(ls)
+        xsysOrNone = makeCDF(ls)
+        if not xsysOrNone:
+          sys.stderr.write('error: cannot plot empty CDF')
+          continue
+        xs,ys = xsysOrNone
         style = args.line_style if args.line_style else linestyles.next()
         p, = plotter(xs, ys, style, linewidth=args.line_width, aa=True)
         lines.append(p)
