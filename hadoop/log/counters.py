@@ -7,7 +7,7 @@ import os
 import sys
 
 import os.path
-sys.path.append(os.path.abspath('.'))
+
 from hadoop.util.padding import to_tab
 
 
@@ -20,7 +20,6 @@ def parse_args(args):
 
 def errl(m):
   sys.stderr.write('{}{}'.format(m,os.linesep))
-
 
 def main():
   args = parse_args(sys.argv[1:])
