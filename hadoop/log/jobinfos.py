@@ -7,7 +7,7 @@ import os
 import sys
 
 import os.path
-sys.path.append(os.path.abspath('.'))
+
 from hadoop.util.padding import to_tab
 
 
