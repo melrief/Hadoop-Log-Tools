@@ -147,7 +147,8 @@ def main():
               .format(ignored_keys,os.linesep))
 
     if not jobid:
-      print('error: it doesn\'t contain the events of a job')
+      sys.stderr.write('error: it doesn\'t contain the events of a job{}'
+                        .format(os.linesep))
       continue
     if args.output_dir:
       if not path.isdir(args.output_dir):
