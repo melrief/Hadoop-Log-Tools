@@ -89,7 +89,8 @@ class Pred:
       if self.op(self.get_val(d), self.val) == True:
         return True
       else:
-        return 'predicate {} failed'.format(repr(self))
+        return 'predicate {} failed (val: {})'.format(repr(self)
+                                                     ,self.get_val(d))
     except KeyError as e:
       return 'predicate {} throwed exception: {}'.format(repr(self),repr(e))
     except ValueError as e:

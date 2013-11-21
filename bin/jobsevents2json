@@ -1,16 +1,55 @@
-#!/bin/bash
+#!/usr/bin/env python
 
-if [[ -z $1 ]]; then
-    echo "Usage: $0 <history_directory> <output_directory>"
-fi
+##!/bin/bash
+#
+#if [[ -z $1 ]]; then
+#    echo "Usage: $0 <history_directory> <output_directory>"
+#fi
+#
+#OUTDIR="$2"
+#CMD="jobevents2json"
+#
+#for fn in `find "${1}/history/done" -type f -regex '.+[^(xml|jar|crc)]$'`
+#do
+#echo "Parsing file ${fn}"
+#"$CMD" -i "${fn}" -o "${OUTDIR}" 1>/dev/null 2>/dev/null &
+#done
+#
+#wait
 
-OUTDIR="$2"
-CMD="jobevents2json"
+from multiprocessing import Pool
+import os
+import sys
 
-for fn in `find "${1}/history/done" -type f -regex '.+[^(xml|jar|crc)]$'`
-do
-echo "Parsing file ${fn}"
-"$CMD" -i "${fn}" -o "${OUTDIR}" 1>/dev/null 2>/dev/null &
-done
+from hadoop.log.convert.jobevents2json import jobevents2json
 
-wait
+
+if len(sys.argv) < 2 or len(sys.argv) > 4:
+  sys.exit('Usage: {} <hist_dir> <out_dir> [<num_procs>]'.format(sys.argv[0]))
+
+hist_dir = os.path.join(sys.argv[1], 'history', 'done')
+
+if not os.path.exists(hist_dir):
+  sys.exit('History dir {} doesn\'t exist'.format(hist_dir))
+
+out_dir = sys.argv[2]
+
+if os.path.exists(out_dir):
+  sys.exit('Output dir {} already exists'.format(out_dir))
+
+os.mkdir(out_dir)
+
+num_procs = int(sys.argv[3]) if len(sys.argv) == 3 else 1
+
+file_paths = []
+for root, dirs, files in os.walk(hist_dir):
+  for f in files:
+    if not (f.endswith('xml') or f.endswith('jar') or f.endswith('crc')):
+      file_paths.append(os.path.join(root,f))
+
+def parse_file(file_path):
+  print 'Parsing {}'.format(file_path)
+  jobevents2json(['', '-i', file_path, '-o', out_dir])
+
+processes = Pool(processes=num_procs)
+processes.map(parse_file, file_paths)

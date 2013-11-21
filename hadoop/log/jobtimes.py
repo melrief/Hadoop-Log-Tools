@@ -3,6 +3,7 @@ from __future__ import print_function,division
 
 import argparse
 import json
+from operator import itemgetter
 import os
 import sys
 
@@ -11,18 +12,14 @@ from hadoop.util.filter import add_predicates
 
 def parse_args(args):
   p = argparse.ArgumentParser(description='Extract job times')
-  p.add_argument('-m','--num-maps',metavar=('MIN','MAX'),nargs=2
-                ,required=False,type=int
-                ,help='filter jobs with num maps > MIN and < MAX')
-  p.add_argument('-r','--num-reduces',metavar=('MIN','MAX'),nargs=2
-                ,required=False,type=int
-                ,help='filter jobs with num reducers > MIN and < MAX')
   g = p.add_mutually_exclusive_group(required=True)
   g.add_argument('-p','--phase'
                      ,choices=['map','shuffle','sort','reduce','full_reduce']
                      ,help='the job phase to extract (full_reduce contains'
                           +' shuffle, sort and reduce time)')
   g.add_argument('-s','--sojourn-time',action='store_true',default=False)
+  g.add_argument('-m','--map-time',action='store_true',default=False)
+  g.add_argument('-r','--reduce-time',action='store_true',default=False)
   p.add_argument('-i','--input-files',metavar='INPUT_FILE'
                 ,required=True, nargs='+',type=argparse.FileType('rt')
                 ,help='files containing the job events in json format')
@@ -56,23 +53,23 @@ def main():
                             .format(jobid, trueOrErr, os.linesep))
         continue
 
-    # filter by num of maps
-    if args.num_maps:
-      num_maps = len(job['maps'])
-      if num_maps < args.num_maps[0] or num_maps > args.num_maps[1]:
-        continue
-
-    # filter by num of reducers
-    if args.num_reduces:
-      num_reduces = len(job['reduces'])
-      if num_reduces < args.num_reduces[0] or num_reduces > args.num_reduces[1]:
-        continue
-
     # print the sojourn time
     if args.sojourn_time:
       print('{} {}'.format(
           jobid if print_id else ''
         , diff(job['finish_time'],job['submit_time'])))
+      continue
+
+    # print the map time
+    if args.map_time or args.reduce_time:
+      tasks = job['maps' if args.map_time else 'reduces'].values()
+      if tasks:
+        start = min(map(itemgetter('start_time'),tasks))
+        finish = max(map(itemgetter('finish_time'),tasks))
+        print('{} {}'.format(jobid if print_id else '', diff(finish,start)))
+      else:
+        sys.stderr.write('job {} doesn\'t have {} tasks\n'
+              .format(jobid, 'map' if args.map_time else 'reduce'))
       continue
     
     # get a time task dependent

@@ -27,7 +27,10 @@ def parse_args(args):
   return p.parse_args(args)
 
 def main():
-  args = parse_args(sys.argv[1:])
+  jobevents2json(sys.argv)
+
+def jobevents2json(argv):
+  args = parse_args(argv[1:])
   debug = args.debug
 
   for input_file in args.input_files:
