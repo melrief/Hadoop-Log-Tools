@@ -1,0 +1,5 @@
+#!/usr/bin/env python
+
+from hadoop.log.job_properties import main
+
+main()
