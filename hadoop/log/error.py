@@ -15,13 +15,14 @@ def parse_args(args):
                      ,action='store_true')
   p.add_argument('-s','--samples',default='starttime'
                      ,choices=['starttime','finishtime'])
+  p.add_argument('-n','--print-id',required=False,action='store_true')
   return p.parse_args(args)
 
 def main():
   args = parse_args(sys.argv[1:])
   k = args.num_samples
   for input_file in args.input_files:
-    job = json.load(input_file).values()[0]
+    jid,job = json.load(input_file).items()[0]
     raw_tasks = job[args.task_type]
     if not args.include_le_k and len(raw_tasks) <= k:
       continue
@@ -36,6 +37,8 @@ def main():
     avg_tasks = sum(tasks)/len(tasks)
     samples = tasks[0:k]
     avg_samples = sum(samples)/len(samples)
+    if args.print_id:
+      sys.stdout.write('{} '.format(jid))
     print( avg_samples/avg_tasks )
 
 if __name__=='__main__':

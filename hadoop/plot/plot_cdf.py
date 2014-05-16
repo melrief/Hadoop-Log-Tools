@@ -8,7 +8,7 @@ from os.path import basename
 import scipy.stats as SS
 import sys
 
-from libplot import linestyles
+from libplot import config_for_paper,linestyles
 
 distr = { 'lognorm' : SS.lognorm }
 
@@ -52,11 +52,18 @@ def mk_parser():
     p.add_argument('-a', '--axes-size', required=False, nargs=2, type=float
                        , default=None, help='resize the axes of the plot to ' +
                                             'the given sizes')
+    p.add_argument('-p', '--for-paper', required=False, action='store_true'
+                       , default=False, help="Use fonts for paper")
     return p
 
 def main():
     p = mk_parser()
     args = p.parse_args(sys.argv[1:])
+    
+    # fonts
+    if args.for_paper:
+      config_for_paper()
+
     lss = []
     legend_labels = []
     if args.input_files is None:
@@ -80,6 +87,7 @@ def main():
 
     plotter = PLT.plot
     if args.x_scale == 'semilogx':
+      sys.stderr.write('plot: using semilogx' + os.linesep)
       plotter = PLT.semilogx
 
     lines = []
@@ -91,7 +99,13 @@ def main():
         xs,ys = xsysOrNone
         style = args.line_style if args.line_style else linestyles.next()
         p, = plotter(xs, ys, style, linewidth=args.line_width, aa=True)
+        if args.x_scale == 'semilogx':
+          PLT.gca().xaxis.set_major_formatter(PLT.ScalarFormatter())
         lines.append(p)
+
+    # fix 0 points overlap by padding
+    PLT.gca().xaxis.set_tick_params(pad=10)
+    PLT.gca().yaxis.set_tick_params(pad=10)
 
     if args.plot_distr:
       for raw_distr in args.plot_distr:
